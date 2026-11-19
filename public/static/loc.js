@@ -5,7 +5,7 @@ const box = document.querySelector('[data-loc]'); if (!box) return;
 const E = t => String(t).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 const seg = box.querySelector('[data-lseg]'), prog = box.querySelector('[data-lprog]'), log = box.querySelector('[data-llog]');
 const btn = {}; box.querySelectorAll('[data-lgo]').forEach(b => { btn[b.dataset.lgo] = b; b.dataset.l = b.textContent; });
-const post = (u, b) => fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) }).then(r => r.json().catch(() => ({})));
+const post = (u, b) => fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) }).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok && j.ok === undefined) j.error = 'HTTP ' + r.status; return j; });
 let since = 0, timer = 0, wasRun = false, t0 = Date.now();
 
 const msg = sessionStorage.getItem('locmsg');
@@ -38,7 +38,7 @@ for (const k in btn) btn[k].onclick = async () => {
   if (st.run && st.kind === k) { await post('/api/loc/stop'); clearTimeout(timer); tick(); return; }
   if (st.run) return;
   log.textContent = ''; since = 0; t0 = Date.now(); wasRun = true;
-  const r = await post('/api/loc/start', { kind: k }); if (r.ok === false) { wasRun = false; }
+  const r = await post('/api/loc/start', { kind: k }); if (r.ok !== true) { wasRun = false; seg.hidden = log.hidden = false; const d = document.createElement('div'); d.className = 'l bad'; d.textContent = 'Could not start: ' + (r.error || 'server error') + (r.kind ? ' (' + r.kind + ' is running)' : ''); log.append(d); return; }
   clearTimeout(timer); tick();
 };
 tick();   // resume the view when the page is opened while a job is running

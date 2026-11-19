@@ -83,3 +83,13 @@ $$('[data-sites]').forEach(f=>{const L=f.querySelector('[data-list]');
 
 /* settings: Telegram data-center test */ $$('[data-tgtest]').forEach(b=>b.onclick=async()=>{const o=$('[data-tgout]');b.disabled=true;o.innerHTML='<span class="chip">Testing…</span>';
  try{const d=await(await fetch('/api/tg/test',{method:'POST'})).json();o.innerHTML=d.results.map(x=>'<span class="chip'+(x.ok?' ok':'')+'">'+(x.ok?'✓ ':'✕ ')+'DC'+x.dc+(x.ok?' · '+x.ms+' ms':'')+'</span>').join('')}catch(e){o.innerHTML='<span class="chip">Test failed</span>'}b.disabled=false});
+/* Sidebar: the highlight slides from the previous tab to the current one (pages are separate loads, so the old position is kept in sessionStorage). */
+(()=>{const s=$('.side'),a=s&&s.querySelector('a.on');if(!s||!a)return;
+const i=document.createElement('i');i.className='ind';s.prepend(i);s.classList.add('has-ind');
+const box=()=>({x:a.offsetLeft,y:a.offsetTop,w:a.offsetWidth,h:a.offsetHeight}),put=b=>{i.style.width=b.w+'px';i.style.height=b.h+'px';i.style.transform='translate('+b.x+'px,'+b.y+'px)'};
+let from=null;try{from=JSON.parse(sessionStorage.getItem('sideInd')||'null')}catch(e){}
+const to=box();
+if(from&&!matchMedia('(prefers-reduced-motion: reduce)').matches){put(from);i.getBoundingClientRect();requestAnimationFrame(()=>{i.classList.add('go');put(to)})}else{put(to);requestAnimationFrame(()=>i.classList.add('go'))}
+try{sessionStorage.setItem('sideInd',JSON.stringify(to))}catch(e){}
+addEventListener('resize',()=>{i.classList.remove('go');put(box());i.getBoundingClientRect();i.classList.add('go')});
+})();

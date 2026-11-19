@@ -135,7 +135,7 @@ export const network = (c, s, cnt) => layout(c, 'Network', html`<h1>Network</h1>
 
 export const convert = c => layout(c, 'Convert', html`<h1>Convert</h1>
 <p class="hint">Everything here runs in your browser. Nothing you paste is sent anywhere, except a subscription URL, which the Worker fetches for you.</p>
-<div class="acc open"><div class="hd"><span>V2Ray Links</span><em class="tag">edit · QR</em></div><div class="bd"><div data-conv="links"></div></div></div>
+<div class="acc"><div class="hd"><span>V2Ray Links</span><em class="tag">edit · QR</em></div><div class="bd"><div data-conv="links"></div></div></div>
 <div class="acc"><div class="hd"><span>WireGuard</span><em class="tag">clash · amnezia · wiresock</em></div><div class="bd"><div data-conv="wg"></div></div></div>
 <div class="acc"><div class="hd"><span>Clash / Sing-box</span><em class="tag">↔ links</em></div><div class="bd"><div data-conv="formats"></div></div></div>`, ['qr.js', 'wg.js', 'convert.js']);
 

@@ -173,3 +173,21 @@ h3.sub{margin:18px 0 8px}
 .btn.live{background:var(--pk);border-color:var(--pk);color:#fff;animation:livepulse 1.4s ease-in-out infinite}
 @keyframes livepulse{50%{opacity:.7}}
 .sites{display:grid;gap:8px;margin:10px 0}.site{margin:0;flex-wrap:nowrap;align-items:center}.site input{flex:1;min-width:0}.site .btn{padding:10px 16px;min-height:46px}
+
+/* Domain picker: compact, auto-sized tiles (domain on top, small label under it) */
+[data-p=cfgdom] .opts{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+[data-p=cfgdom] .opt{flex-direction:column;align-items:flex-start;gap:2px;min-height:0;padding:6px 10px;font-size:14px;line-height:1.25;border-radius:10px;max-width:100%}
+[data-p=cfgdom] .opt span:not(.flag){overflow-wrap:anywhere;word-break:normal}
+[data-p=cfgdom] .opt small{margin-left:0;font-size:10px;white-space:normal}
+
+/* Sidebar sliding highlight */
+.side .ind{position:absolute;left:0;top:0;pointer-events:none;z-index:0;box-sizing:border-box;border:3px solid var(--tl);box-shadow:4px 4px 0 var(--sh);border-width:0;border-radius:14px;box-shadow:none;background:color-mix(in srgb,var(--pu) 22%,transparent)}
+.side .ind.go{transition:transform .55s var(--spring),width .55s var(--spring),height .55s var(--spring)}
+.side a{position:relative;z-index:1}
+.side.has-ind a.on{background:none;border-color:transparent;box-shadow:none}
+
+/* Entrance animation for every page (Home's .box cards already have it): accordions, headings, hints, forms, lists... */
+main>*:not(.box):not(.toast):not(.chip):not(.grid):not(br):not(script):not(style){animation:rise 1.1s var(--spring) backwards}
+main>*:nth-child(2){animation-delay:.07s}main>*:nth-child(3){animation-delay:.14s}main>*:nth-child(4){animation-delay:.21s}
+main>*:nth-child(5){animation-delay:.28s}main>*:nth-child(n+6){animation-delay:.35s}
+.grid>*:nth-child(n+6){animation-delay:.35s}

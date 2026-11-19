@@ -67,7 +67,7 @@ export async function fetchList(url, hint, fetchFn = fetch) {
   try {
     const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 8000);
     let r; try { r = await fetchFn(url, { headers: { 'User-Agent': 'xr-panel' }, signal: ctrl.signal }); } finally { clearTimeout(t); }
-    if (!r.ok) return null; txt = (await r.text()).slice(0, 2_000_000);
+    if (!r.ok) return null; txt = (await r.text()).slice(0, 300_000);
   } catch { return null; }
   const out = new Map();
   for (const m of txt.matchAll(PX_RE)) {
@@ -92,7 +92,7 @@ const saveJob = (db, j) => db.set('job', JSON.stringify(j));
 const lg = (j, cls, txt) => { j.seq++; j.log.push([j.seq, cls, txt]); if (j.log.length > 120) j.log.splice(0, j.log.length - 120); };
 export function view(j, since = 0) { return { run: j.run, kind: j.kind, total: j.total, done: j.done, added: j.added, tried: j.tried, alive: j.alive, msg: j.msg, stopping: false, seq: j.seq, log: j.log.filter(x => x[0] > since) }; }
 
-export async function startJob(db, kind, fetchFn = fetch) {
+async function startJob0(db, kind, fetchFn = fetch) {
   const cur = await getJob(db); if (cur.run && now() - (cur.ts || 0) < 120) return { error: 'Another job is running', kind: cur.kind };
   const j = { ...blank(), run: true, kind, ts: now() };
   const existing = new Set((await db.all('SELECT host,port FROM proxies')).map(r => `${r.host}:${r.port}`));
@@ -117,9 +117,11 @@ export async function startJob(db, kind, fetchFn = fetch) {
     await saveJob(db, j); return { ok: true };
   }
   await db.run('DELETE FROM cand');
-  for (let i = 0; i < c.list.length; i += 30) { const ch = c.list.slice(i, i + 30); await db.run(`INSERT INTO cand(host,port,proto) VALUES ${ch.map(() => '(?,?,?)').join(',')}`, ...ch.flat()); }
+  for (let i = 0; i < c.list.length; i += 30) { const ch = c.list.slice(i, i + 30); await db.run(`INSERT INTO cand(host,port,proto) VALUES ${ch.map(() => '(?,?,?)').join(',')}`, ...ch.flat()); }   // held in memory, written to KV once by flush()
   await saveJob(db, j); return { ok: true };
 }
+export async function startJob(db, kind, fetchFn = fetch) { db.begin(); try { return await startJob0(db, kind, fetchFn); } finally { await db.flush(); } }
+export async function stepJob(db, connect, fetchFn = fetch) { db.begin(); try { return await stepJob0(db, connect, fetchFn); } finally { await db.flush(); } }
 export async function stopJob(db) { const j = await getJob(db); if (j.run) { j.run = false; j.stop = true; j.msg = `stopped · ${j.added} ${j.kind === 'recover' ? 'replaced' : 'added'}`; lg(j, 'w', j.msg); await saveJob(db, j); } return view(j); }
 
 async function probeOne(connect, [h, p, pr]) {
@@ -128,7 +130,7 @@ async function probeOne(connect, [h, p, pr]) {
 }
 async function pool(items, n, fn) { const out = []; let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k]); } })); return out; }
 
-export async function stepJob(db, connect, fetchFn = fetch) {
+async function stepJob0(db, connect, fetchFn = fetch) {
   const j = await getJob(db); if (!j.run) return view(j);
   const rows = await db.all('SELECT id,host,port,proto FROM cand ORDER BY id LIMIT ?', BATCH);
   const finish = async () => {

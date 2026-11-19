@@ -166,7 +166,11 @@ export class DB {
     this.cache.set(name, arr); return arr;
   }
   async tables(name) { return this.data(name); }
-  async save(name) { await this.kv.put('t:' + name, JSON.stringify(this.cache.get(name) || [])); }
+  // KV allows about one write per second to the same key, so a multi-step job holds its writes (begin) and writes each
+  // changed table exactly once at the end (flush).
+  begin() { this.hold = true; this.dirty = new Set(); }
+  async flush() { this.hold = false; const d = [...(this.dirty || [])]; this.dirty = new Set(); for (const n of d) await this.kv.put('t:' + n, JSON.stringify(this.cache.get(n) || [])); }
+  async save(name) { if (this.hold) { this.dirty.add(name); return; } await this.kv.put('t:' + name, JSON.stringify(this.cache.get(name) || [])); }
   async all(sql, ...a) { return exec(this, String(sql).replace(/\s+/g, ' ').trim(), a, false); }
   async one(sql, ...a) { const r = await exec(this, String(sql).replace(/\s+/g, ' ').trim(), a, false); return r[0] || null; }
   async run(sql, ...a) { await exec(this, String(sql).replace(/\s+/g, ' ').trim(), a, true); return { success: true }; }
