@@ -38,7 +38,7 @@ export const home = (c, st) => layout(c, 'Home', html`<h1>Home</h1><section clas
 <div class="box pk"><h3>Relays</h3><p class="big" data-k="relays">${st.relays}</p><small>deployed on other platforms</small></div>
 <div class="box tl" id="cfbox"><h3>Requests today</h3><p class="big"><span id="cf-used">…</span></p><small id="cf-left">Cloudflare account · resets 00:00 UTC</small><div class="bar" id="cf-bar" style="--v:0"></div></div>
 <div class="box yl"><h3>Fragment</h3><p class="big" data-k="frag">${st.frag}</p></div>
-<div class="box pu"><h3>Runtime</h3><p class="big">Pages</p><small>KV namespace</small></div></section><script>(function(){var n=function(x){return Number(x).toLocaleString()};fetch('/api/cf').then(function(r){return r.json()}).then(function(d){var u=document.getElementById('cf-used'),l=document.getElementById('cf-left'),b=document.getElementById('cf-bar');if(!d.ok){u.textContent='—';l.textContent='Cloudflare token not configured';return}u.textContent=n(d.used);if(d.limit){l.textContent=n(d.left)+' left of '+n(d.limit)+' · resets 00:00 UTC';b.style.setProperty('--v',Math.min(100,d.used*100/d.limit))}else l.textContent='used today · resets 00:00 UTC'}).catch(function(){})})()</script>`);
+<div class="box pu"><h3>Runtime</h3><p class="big">Pages</p><small>D1 database</small></div></section><script>(function(){var n=function(x){return Number(x).toLocaleString()};fetch('/api/cf').then(function(r){return r.json()}).then(function(d){var u=document.getElementById('cf-used'),l=document.getElementById('cf-left'),b=document.getElementById('cf-bar');if(!d.ok){u.textContent='—';l.textContent='Cloudflare token not configured';return}u.textContent=n(d.used);if(d.limit){l.textContent=n(d.left)+' left of '+n(d.limit)+' · resets 00:00 UTC';b.style.setProperty('--v',Math.min(100,d.used*100/d.limit))}else l.textContent='used today · resets 00:00 UTC'}).catch(function(){})})()</script>`);
 
 // ---------------- users ----------------
 export function users(c, list, s, grps, q) {
@@ -151,7 +151,7 @@ ${join(rv, v => html`<div class="acc ${o === v.id || v.status === 'deploying' ? 
 <form class="f" method="post" action="/relays/${v.id}/deploy" style="margin-top:0">
 <label>API token<input name="token" type="password" autocomplete="off" autocapitalize="off" placeholder="${v.has_token ? 'saved · leave empty to reuse' : 'paste token'}" ${v.has_token ? '' : raw('required')}></label>
 <button class="btn" data-go ${v.status === 'deploying' ? raw('disabled') : ''}>${v.has_ref ? 'Redeploy' : 'Deploy'}</button></form>
-<p class="hint"><a href="${v.token_url}" target="_blank" rel="noopener">Get a token</a> · the token is stored only in this Pages project's KV namespace and is never shown again.</p>
+<p class="hint"><a href="${v.token_url}" target="_blank" rel="noopener">Get a token</a> · the token is stored only in this Pages project's D1 database and is never shown again.</p>
 <div data-steps ${v.status === 'idle' ? raw('hidden') : ''}>${join(v.steps, s => html`<span class="chip ${s.st}">${SSYM[s.st]} ${s.l}${s.m && (s.st === 'ok' || s.st === 'run') ? ' · ' + s.m : ''}</span>`)}</div>
 <p class="hint err" data-err ${!v.err ? raw('hidden') : ''}>${v.err}</p>
 <div data-out ${!v.domain ? raw('hidden') : ''}>
@@ -243,7 +243,7 @@ ${join(sites, u => html`<div class="row site"><input name="site" value="${u}" pl
     : html`<p class="hint"><b>Upstream relay.</b> Every protocol is relayed unchanged to <b>${s.upstream}</b> using the same <code>/ws/&lt;protocol&gt;/&lt;uuid&gt;</code> path. Quotas and expiry are enforced here; traffic is metered here.</p>`}
 <p class="hint">Changes apply immediately: there is no config to write and nothing to restart.</p></div><br>
 <div class="box tl ${o === 'update' ? 'open' : ''}"><h3>Update</h3>
-<p class="hint">Running <b>v${upd.version}</b> · build <code>${upd.build}</code> · source <code>github.com/${upd.repo}</code> (${upd.branch}). This is a Cloudflare Pages project: push a commit to your Git repository (or redeploy in the Cloudflare dashboard) to update. Users, settings and KV data are kept.</p></div><br>
+<p class="hint">Running <b>v${upd.version}</b> · build <code>${upd.build}</code> · source <code>github.com/${upd.repo}</code> (${upd.branch}). This is a Cloudflare Pages project: push a commit to your Git repository (or redeploy in the Cloudflare dashboard) to update. Users, settings and D1 data are kept.</p></div><br>
 <div class="box pk"><h3>Telegram Web Proxy</h3><p class="hint">Every user has a secret of their own, made when the user is created; the link is on the user's subscription page and on the Users page. The proxy needs this Pages Function to reach Telegram's data centers: test it here.</p>
 <div class="row"><button type="button" class="btn o pk" data-tgtest>Test Telegram data centers</button></div><div class="res" data-tgout></div></div>`);
 }

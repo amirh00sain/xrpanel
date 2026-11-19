@@ -117,7 +117,7 @@ async function startJob0(db, kind, fetchFn = fetch) {
     await saveJob(db, j); return { ok: true };
   }
   await db.run('DELETE FROM cand');
-  for (let i = 0; i < c.list.length; i += 30) { const ch = c.list.slice(i, i + 30); await db.run(`INSERT INTO cand(host,port,proto) VALUES ${ch.map(() => '(?,?,?)').join(',')}`, ...ch.flat()); }   // held in memory, written to KV once by flush()
+  for (let i = 0; i < c.list.length; i += 30) { const ch = c.list.slice(i, i + 30); await db.run(`INSERT INTO cand(host,port,proto) VALUES ${ch.map(() => '(?,?,?)').join(',')}`, ...ch.flat()); }   // held in memory, written to D1 by each statement
   await saveJob(db, j); return { ok: true };
 }
 export async function startJob(db, kind, fetchFn = fetch) { db.begin(); try { return await startJob0(db, kind, fetchFn); } finally { await db.flush(); } }

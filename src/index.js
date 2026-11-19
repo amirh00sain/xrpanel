@@ -1,5 +1,5 @@
-// xr PANEL for Cloudflare Pages + KV. No Xray: VLESS / VMess / Shadowsocks / Trojan are terminated in the Pages
-// Function and relayed over TCP sockets; KV holds users, settings and every other table.
+// xr PANEL for Cloudflare Pages + D1. No Xray: VLESS / VMess / Shadowsocks / Trojan are terminated in the Pages
+// Function and relayed over TCP sockets; D1 holds users, settings and every other table.
 import { connect } from 'cloudflare:sockets';
 import { DB, init, state, fmt, GB, now, DEFAULTS, DEFAULT_SITES, newSecret } from './db.js';
 import { hashPw, checkPw, makeSession, validSession, cookies, cookie } from './auth.js';
@@ -21,7 +21,7 @@ const clientGroups = su => CLIENTS.map(([g, a]) => [g, a.map(([n, d, i]) => [n, 
 const KINDS = ['ip', 'sni', 'warp', 'masque'];
 const NOFLAG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3"><rect width="4" height="3" fill="#3a3a4a"/><path d="M1 .5v2M1 .5h1.7l-.4.5.4.5H1" fill="#8c8ca0"/></svg>';
 const MARK = RL.MARK;
-const noDb = () => new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xr PANEL · KV missing</title><body style="font:16px system-ui;max-width:640px;margin:12vh auto;padding:0 20px;line-height:1.6"><h2>xr PANEL is running, but its KV namespace is not attached</h2><p>The Pages project needs a KV binding named <b>KV</b>.</p><p>Cloudflare dashboard → Workers &amp; Pages → this Pages project → Settings → Bindings → Add → KV namespace → variable name <b>KV</b> → pick the namespace → Redeploy.</p><p dir="rtl">پنل بالا آمده ولی KV به آن وصل نیست. در Cloudflare: Workers &amp; Pages ← همین پروژه Pages ← Settings ← Bindings ← Add ← KV namespace ← نام متغیر <b>KV</b> ← namespace را انتخاب کنید ← Redeploy.</p>', { status: 503, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
+const noDb = () => new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xr PANEL · D1 missing</title><body style="font:16px system-ui;max-width:640px;margin:12vh auto;padding:0 20px;line-height:1.6"><h2>xr PANEL is running, but its D1 database is not attached</h2><p>The Pages project needs a D1 binding named <b>DB</b>.</p><p>Cloudflare dashboard → Workers &amp; Pages → this Pages project → Settings → Bindings → Add → D1 database → variable name <b>DB</b> → pick the database → Redeploy.</p><p dir="rtl">پنل بالا آمده ولی D1 به آن وصل نیست. در Cloudflare: Workers &amp; Pages ← همین پروژه Pages ← Settings ← Bindings ← Add ← D1 database ← نام متغیر <b>DB</b> ← دیتابیس را انتخاب کنید ← Redeploy.</p>', { status: 503, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 
 const J = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 const HTML = (h, extra = {}) => new Response(String(h), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', ...extra } });
@@ -78,7 +78,7 @@ export function makeApp({ connectFn = connect, fetchFn = (...a) => fetch(...a), 
   // ---------------- main ----------------
   async function handle(req, env, ctx) {
     const url = new URL(req.url), path = url.pathname, method = req.method;
-    if (!(env && env.KV) && !path.startsWith('/static/') && path !== '/relay-check' && path !== '/healthz') return noDb();
+    if (!(env && env.DB) && !path.startsWith('/static/') && path !== '/relay-check' && path !== '/healthz') return noDb();
     const wm = path.match(WS_PATH); if (wm) return wsRoute(req, env, ctx, wm);
     if (path.startsWith('/static/')) {
       const f = Object.hasOwn(STATIC, path.slice(8)) ? STATIC[path.slice(8)] : null; if (!f || !['GET', 'HEAD'].includes(method)) return new Response('Not found', { status: 404 });

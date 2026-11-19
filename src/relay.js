@@ -32,7 +32,7 @@ export function parseTrojan(b, uuid) {
 }
 
 // ---------- usage accounting + enforcement ----------
-// Counts every byte of a session, writes it to KV in batches and kills the session the moment the account stops being
+// Counts every byte of a session, writes it to D1 in batches and kills the session the moment the account stops being
 // active: volume is checked locally against what was left at the last write (so the cut is exact for one session and
 // within a few KB across sessions), expiry by a timer that re-reads the account when it fires.
 const FLUSH_BYTES = 512 * 1024, FLUSH_MS = 30000, MIN_FLUSH = 16 * 1024, TIMER_MAX = 2 ** 31 - 1;

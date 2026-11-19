@@ -9,7 +9,7 @@
 //
 // Every user has a secret of their own (users.wp_secret, made when the user is created). The secret picks the
 // user; the bootstrap and session tokens are signed with it and carry the user id, so regenerating the secret
-// revokes them. The session meters every byte against that user's volume and expiry (stored in KV) and cuts it.
+// revokes them. The session meters every byte against that user's volume and expiry (stored in D1) and cuts it.
 import { DB, state } from './db.js';
 import { panelDomain } from './links.js';
 import { Meter } from './relay.js';
